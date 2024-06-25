@@ -1,0 +1,8 @@
+### GET hello world
+
+GET http://127.0.0.1:3000/items/4 HTTP/1.1
+
+
+GET http://127.0.0.1:3000/docs HTTP/1.1
+
+
