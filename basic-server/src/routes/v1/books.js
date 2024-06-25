@@ -1,4 +1,3 @@
-// routes/v1/books.js
 
 const { bookSchema, querySchema } = require('../../schemas/v1/books');
 
