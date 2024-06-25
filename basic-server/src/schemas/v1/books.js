@@ -6,7 +6,7 @@ const bookSchema = {
     id: { type: 'integer' },
     title: { type: 'string' },
     author: { type: 'string' },
-    isbn: { type: 'string', pattern: '^(?=(?:\D*\d){10}(?:(?:\D*\d){3})?$)[\d-]+$' },
+    isbn: { type: 'string', pattern: '^[0-9]{10}$' },
     publicationYear: { type: 'integer', minimum: 1500, maximum: new Date().getFullYear() }
   }
 };

@@ -121,7 +121,7 @@ function addBook(request, reply) {
 }
 
 function updateBook(request, reply) {
-  const index = books.findIndex(b => b.id === request.params.id);
+  const index = books.findIndex(b => b.isbn === request.params.isbn);
   if (index !== -1) {
     books[index] = { ...books[index], ...request.body };
     reply.send(books[index]);
