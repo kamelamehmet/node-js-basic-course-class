@@ -83,24 +83,20 @@ function bookRoutes(fastify, options, done) {
 function getBooks(request, reply) {
   let { author, publicationYear, page = 0, limit = 10, sort = 'DESC' } = request.query;
 
-  let filteredBooks = books.slice(); // Avoid direct mutation
+  let filteredBooks = books.slice(); 
 
-  // Filter by author
   if (author) {
     filteredBooks = filteredBooks.filter(book => book.author.toLowerCase().includes(author.toLowerCase()));
   }
 
-  // Filter by publication year
   if (publicationYear) {
     filteredBooks = filteredBooks.filter(book => book.publicationYear === parseInt(publicationYear));
   }
 
-  // Sort books
   filteredBooks.sort((a, b) => sort === 'ASC' ? a.publicationYear - b.publicationYear : b.publicationYear - a.publicationYear);
 
-  // Pagination
-  page = Math.max(1, parseInt(page)); // Ensure page is at least 1
-  limit = Math.max(1, parseInt(limit)); // Ensure limit is at least 1
+  page = Math.max(1, parseInt(page)); 
+  limit = Math.max(1, parseInt(limit)); 
   const start = (page) * limit;
   const paginatedBooks = filteredBooks.slice(start, start + limit);
 
