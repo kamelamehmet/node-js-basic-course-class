@@ -126,7 +126,8 @@ function updateBook(request, reply) {
     books[index] = { ...books[index], ...request.body };
     reply.send(books[index]);
   } else {
-    books.push(request.body)
+    books.push({ isbn: request.params.isbn, ...request.body })
+    reply.send(books[books.length - 1])
   }
 }
 
