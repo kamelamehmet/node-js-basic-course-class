@@ -1,6 +1,5 @@
-
-const { books } = require('./data');
-const { bookSchema, querySchema } = require('./schema');
+const { books } = require('../../models/book');
+const { bookSchema, querySchema } = require('../../schemas/v1/books');
 
 
 const routes = [
@@ -108,4 +107,4 @@ const routes = [
   }
 ];
 
-module.exports = routes;
+module.exports = { routes };
