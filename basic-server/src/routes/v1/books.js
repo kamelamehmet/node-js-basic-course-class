@@ -91,10 +91,10 @@ const bookRoutes = async (app) => {
     }
   });
 
-  app.delete('/books/:id', {
+  app.delete('/books/:isbn', {
     handler: async (request, reply) => {
-      const { id } = request.params;
-      const { rowCount } = await app.pg.query('DELETE FROM books WHERE id = $1', [id]);
+      const { isbn } = request.params;
+      const { rowCount } = await app.pg.query('DELETE FROM books WHERE isbn = $1', [isbn]);
       if (rowCount === 0) {
         reply.status(404).send({ message: 'Book not found' });
       } else {

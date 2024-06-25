@@ -11,9 +11,9 @@ const build = (opts = {}, optsSwaggerUI = {}) => {
   app.register(fastifySwaggerUI, optsSwaggerUI)
   app.register(bookRoutes)
   app.register(postgres, {
-    connectionString: "postgresql://student:student@127.0.0.1:5432/library"
+    connectionString: process.env.CONNECTION_STRING
 
-})
+  })
   return app;
 };
 
