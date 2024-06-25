@@ -1,21 +1,19 @@
 const fastify = require("fastify");
-const fastifySwaggerUI =  require("@fastify/swagger-ui");
-const fastifySwagger =  require("@fastify/swagger");
+const fastifySwagger = require("@fastify/swagger");
+const fastifySwaggerUI= require("@fastify/swagger-ui")
+const {routes} = require("./routes/v1/books");
+const jwt = require("@fastify/jwt");
 
-
-
-const {itemRoutes} = require("./routes/v1/items");
-
-const build = async (opts={}, swaggerOpts = {})=> {
+const build = (opts = {}, optsSwaggerUI={}) => {
     const app = fastify(opts);
-    
-    await app.register(fastifySwagger)
-    await app.register(fastifySwaggerUI, swaggerOpts)
+    app.register(fastifySwagger);
+    app.register(fastifySwaggerUI, optsSwaggerUI)
+    app.route(routes);
 
-    await app.register(itemRoutes);
+
    
-    return await app. ready();
 
-}
+    return app;
+};
 
-module.exports={build};
+module.exports = {build};
