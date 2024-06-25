@@ -1,9 +1,9 @@
-const { books } = require('../../models/book');
-const { bookSchema, querySchema, updateBookSchema } = require('../../schemas/v1/books');
+// routes/v1/books.js
 
+const { bookSchema, querySchema } = require('../../schemas/v1/books');
 
-function bookRoutes(fastify, options, done) {
-  fastify.get('/books', {
+const bookRoutes = async (app) => {
+  app.get('/books', {
     schema: {
       querystring: querySchema,
       response: {
@@ -12,132 +12,96 @@ function bookRoutes(fastify, options, done) {
           items: bookSchema
         }
       }
-    }
-  }, getBooks);
+    },
+    handler: async (request, reply) => {
+      const { author, publicationYear, page = 1, limit = 10, sort = 'DESC' } = request.query;
+      let query = 'SELECT * FROM books WHERE 1=1';
+      const params = [];
+      let paramIndex = 1;
+      if (author) {
+        query += ` AND author ILIKE $${paramIndex++}`;
+        params.push(`%${author}%`);
+      }
+      if (publicationYear) {
+        query += ` AND publicationYear = $${paramIndex++}`;
+        params.push(publicationYear);
+      }
+      query += ` ORDER BY publicationYear ${sort}`;
+      query += ` LIMIT $${paramIndex++} OFFSET $${paramIndex}`;
+      params.push(limit, (page - 1) * limit);
 
-  fastify.get('/books/:isbn', {
+      const { rows } = await request.pg.query(query, params);
+      reply.send(rows);
+    }
+  });
+
+  app.get('/books/:id', {
     schema: {
       response: {
-        200: bookSchema,
-        404: {
-          type: 'object',
-          properties: {
-            message: { type: 'string' }
-          }
-        }
+        200: bookSchema
+      }
+    },
+    handler: async (request, reply) => {
+      const { id } = request.params;
+      const { rows } = await request.pg.query('SELECT * FROM books WHERE id = $1', [id]);
+      if (rows.length === 0) {
+        reply.status(404).send({ message: 'Book not found' });
+      } else {
+        reply.send(rows[0]);
       }
     }
-  }, getBookById);
+  });
 
-  fastify.post('/books', {
+  app.post('/books', {
     schema: {
       body: bookSchema,
       response: {
-        201: bookSchema,
-        409: {
-          type: "object",
-          properties: {
-            message: {
-              type: "string"
-            }
-          }
-        }
+        201: bookSchema
       }
+    },
+    handler: async (request, reply) => {
+      const { title, author, isbn, publicationYear } = request.body;
+      const { rows } = await request.pg.query(
+        'INSERT INTO books (title, author, isbn, publicationYear) VALUES ($1, $2, $3, $4) RETURNING *',
+        [title, author, isbn, publicationYear]
+      );
+      reply.status(201).send(rows[0]);
     }
-  }, addBook);
+  });
 
-  fastify.put('/books/:isbn', {
+  app.put('/books/:id', {
     schema: {
-      body: updateBookSchema,
+      body: bookSchema,
       response: {
-        200: bookSchema,
-        404: {
-          type: 'object',
-          properties: {
-            message: { type: 'string' }
-          }
-        }
+        200: bookSchema
+      }
+    },
+    handler: async (request, reply) => {
+      const { id } = request.params;
+      const { title, author, isbn, publicationYear } = request.body;
+      const { rows } = await request.pg.query(
+        'UPDATE books SET title = $1, author = $2, isbn = $3, publicationYear = $4 WHERE id = $5 RETURNING *',
+        [title, author, isbn, publicationYear, id]
+      );
+      if (rows.length === 0) {
+        reply.status(404).send({ message: 'Book not found' });
+      } else {
+        reply.send(rows[0]);
       }
     }
-  }, updateBook);
+  });
 
-  fastify.delete('/books/:isbn', {
-    schema: {
-      response: {
-        204: {
-          type: 'null'
-        },
-        404: {
-          type: 'object',
-          properties: {
-            message: { type: 'string' }
-          }
-        }
+  app.delete('/books/:id', {
+    handler: async (request, reply) => {
+      const { id } = request.params;
+      const { rowCount } = await request.pg.query('DELETE FROM books WHERE id = $1', [id]);
+      if (rowCount === 0) {
+        reply.status(404).send({ message: 'Book not found' });
+      } else {
+        reply.status(204).send();
       }
     }
-  }, deleteBook);
+  });
+};
 
-  done();
-}
-
-function getBooks(request, reply) {
-  let { author, publicationYear, page = 0, limit = 10, sort = 'DESC' } = request.query;
-
-
-  let filteredBooks = books.slice();
-
-
-  if (author) {
-    filteredBooks = filteredBooks.filter(book => book.author.toLowerCase().includes(author.toLowerCase()));
-  }
-
-  if (publicationYear) {
-    filteredBooks = filteredBooks.filter(book => book.publicationYear === parseInt(publicationYear));
-  }
-
-  filteredBooks.sort((a, b) => sort === 'ASC' ? a.publicationYear - b.publicationYear : b.publicationYear - a.publicationYear);
-
-  page = Math.max(0, parseInt(page));
-  limit = Math.max(1, parseInt(limit));
-  const start = (page) * limit;
-  const paginatedBooks = filteredBooks.slice(start, start + limit);
-
-  reply.send(paginatedBooks);
-}
-
-function getBookById(request, reply) {
-  const book = books.find(b => b.isbn === request.params.isbn);
-  if (book) {
-    reply.send(book);
-  } else {
-    reply.status(404).send({ message: 'Book not found' });
-  }
-}
-
-function addBook(request, reply) {
-  if (books.findIndex(b => b.isbn === request.body.isbn) !== -1) return reply.status(409).send({ message: "Book with that isbn already exists" })
-  books.push(request.body);
-  reply.status(201).send("Book added succesfully");
-}
-
-function updateBook(request, reply) {
-  const index = books.findIndex(b => b.isbn === request.params.isbn);
-  if (index !== -1) {
-    books[index] = { ...books[index], ...request.body };
-    reply.send(books[index]);
-  } else {
-    books.push({ isbn: request.params.isbn, ...request.body })
-    reply.send(books[books.length - 1])
-  }
-}
-
-function deleteBook(request, reply) {
-  const index = books.findIndex(b => b.isbn === request.params.isbn);
-  if (index !== -1) {
-    books.splice(index, 1);
-    reply.status(204).send();
-  } else {
-    reply.status(404).send({ message: 'Book not found' });
-  }
-}
 module.exports = { bookRoutes };
