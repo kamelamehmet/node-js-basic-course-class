@@ -1,7 +1,7 @@
 
 const bookSchema = {
   type: 'object',
-  required: ['title', 'author', 'isbn', 'publicationYear'],
+  required: ['title', 'author', 'isbn'],
   properties: {
     title: { type: 'string' },
     author: { type: 'string' },

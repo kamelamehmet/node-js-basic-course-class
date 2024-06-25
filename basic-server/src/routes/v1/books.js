@@ -29,7 +29,7 @@ const bookRoutes = async (app) => {
       query += ` LIMIT $${paramIndex++} OFFSET $${paramIndex}`;
       params.push(limit, (page - 1) * limit);
 
-      const { rows } = await request.pg.query(query, params);
+      const { rows } = await app.pg.query(query, params);
       reply.send(rows);
     }
   });
@@ -42,7 +42,7 @@ const bookRoutes = async (app) => {
     },
     handler: async (request, reply) => {
       const { id } = request.params;
-      const { rows } = await request.pg.query('SELECT * FROM books WHERE id = $1', [id]);
+      const { rows } = await app.pg.query('SELECT * FROM books WHERE id = $1', [id]);
       if (rows.length === 0) {
         reply.status(404).send({ message: 'Book not found' });
       } else {
@@ -60,7 +60,7 @@ const bookRoutes = async (app) => {
     },
     handler: async (request, reply) => {
       const { title, author, isbn, publicationYear } = request.body;
-      const { rows } = await request.pg.query(
+      const { rows } = await app.pg.query(
         'INSERT INTO books (title, author, isbn, publicationYear) VALUES ($1, $2, $3, $4) RETURNING *',
         [title, author, isbn, publicationYear]
       );
@@ -78,7 +78,7 @@ const bookRoutes = async (app) => {
     handler: async (request, reply) => {
       const { id } = request.params;
       const { title, author, isbn, publicationYear } = request.body;
-      const { rows } = await request.pg.query(
+      const { rows } = await app.pg.query(
         'UPDATE books SET title = $1, author = $2, isbn = $3, publicationYear = $4 WHERE id = $5 RETURNING *',
         [title, author, isbn, publicationYear, id]
       );
@@ -93,7 +93,7 @@ const bookRoutes = async (app) => {
   app.delete('/books/:id', {
     handler: async (request, reply) => {
       const { id } = request.params;
-      const { rowCount } = await request.pg.query('DELETE FROM books WHERE id = $1', [id]);
+      const { rowCount } = await app.pg.query('DELETE FROM books WHERE id = $1', [id]);
       if (rowCount === 0) {
         reply.status(404).send({ message: 'Book not found' });
       } else {
