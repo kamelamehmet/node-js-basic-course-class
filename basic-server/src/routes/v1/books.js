@@ -83,7 +83,7 @@ function bookRoutes(fastify, options, done) {
 function getBooks(request, reply) {
   let { author, publicationYear, page = 0, limit = 10, sort = 'DESC' } = request.query;
 
-  let filteredBooks = books.lice(); // Avoid direct mutation
+  let filteredBooks = books.slice(); // Avoid direct mutation
 
   // Filter by author
   if (author) {
