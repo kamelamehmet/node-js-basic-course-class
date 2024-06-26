@@ -1,6 +1,10 @@
 ### GET hello world
 
-GET http://127.0.0.1:3000/books?sort=ASC HTTP/1.1
+# GET http://127.0.0.1:3000/books?sort=ASC HTTP/1.1
+
+POST http://127.0.0.1:3000/signup HTTP/1.1
+content-type: application/json
+
 
 
 GET http://127.0.0.1:3000/books HTTP/1.1

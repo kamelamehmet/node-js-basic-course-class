@@ -18,6 +18,11 @@
   },
   "homepage": "https://github.com/kamelamehmet/node-js-basic-course-class#readme",
   "dependencies": {
-    "@fastify/postgres": "^5.2.2"
+    "@fastify/postgres": "^5.2.2",
+    "bcrypt": "^5.1.1",
+    "dotenv": "^16.4.5",
+    "fastify": "^4.28.0",
+    "fastify-jwt": "^4.2.0",
+    "fastify-postgres": "^3.7.0"
   }
 }
