@@ -2,7 +2,6 @@ const { bookSchema, querySchema } = require('../../schemas/v1/books');
 
 const bookRoutes = async (app, opts, done) => {
   app.get('/books', {
-
     schema: {
       querystring: querySchema,
       response: {
@@ -45,7 +44,7 @@ const bookRoutes = async (app, opts, done) => {
       }
     },
     handler: async (request, reply) => {
-      const user = request.authenticate();
+      const user = request.user;
       if (!user) { reply.code(401).send("Unathorized") }
       if (user.role !== "normal") { reply.code(403).send("Forbidden") }
       const { isbn } = request.params;
@@ -66,7 +65,7 @@ const bookRoutes = async (app, opts, done) => {
       }
     },
     handler: async (request, reply) => {
-      const user = request.authenticate();
+      const user = request.user;
       if (!user) { reply.code(401).send("Unathorized") }
       if (user.role !== "admin") { reply.code(403).send("Forbidden") }
       const { title, author, isbn, publicationYear } = request.body;
@@ -86,7 +85,7 @@ const bookRoutes = async (app, opts, done) => {
       }
     },
     handler: async (request, reply) => {
-      const user = request.authenticate();
+      const user = request.user;
       if (!user) { reply.code(401).send("Unathorized") }
       if (user.role !== "admin") { reply.code(403).send("Forbidden") }
       const { isbn } = request.params;
@@ -105,7 +104,7 @@ const bookRoutes = async (app, opts, done) => {
 
   app.delete('/books/:isbn', {
     handler: async (request, reply) => {
-      const user = request.authenticate();
+      const user = request.user;
       if (!user) { reply.code(401).send("Unathorized") }
       if (user.role !== "admin") { reply.code(403).send("Forbidden") }
       const { isbn } = request.params;
