@@ -11,9 +11,6 @@ const build = (opts = {}, optsSwaggerUI = {}) => {
   const app = fastify(opts);
   app.register(fastifySwagger);
   app.register(fastifySwaggerUI, optsSwaggerUI)
-  app.register(jwt, {
-    secret: "SECRET_KEY"
-  })
   app.register(bookRoutes)
   app.register(authRoutes)
   app.register(postgres, {
@@ -22,6 +19,13 @@ const build = (opts = {}, optsSwaggerUI = {}) => {
   app.register(jwt, {
     secret: "kjghfjh"
   });
+  app.decorateRequest("authenticate", (request, reply) => {
+    try {
+      return app.jwt.verify()
+    } catch (err) {
+      reply.send(err)
+    }
+  })
   return app;
 };
 

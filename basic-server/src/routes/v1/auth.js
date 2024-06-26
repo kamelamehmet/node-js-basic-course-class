@@ -5,20 +5,20 @@ const authRoutes = async (fastify) => {
     const { username, password, role } = request.body;
     let hashedPassword = "";
 
-    bcrypt.hash(password, 10, (err, hash) => {
-      hashedPassword = hash
+    bcrypt.hash(password, 10, async (err, hash) => {
+      if (err) reply.send(err)
+      const { rowCount } = await fastify.pg.query(
+        'INSERT INTO users (username, password, role) VALUES ($1, $2, $3)',
+        [username, hash, role]
+      );
+
+      if (rowCount === 1) {
+        reply.code(201).send({ message: 'User created successfully' });
+      } else {
+        reply.code(500).send({ message: 'User creation failed' });
+      }
     });
 
-    const { rowCount } = await fastify.pg.query(
-      'INSERT INTO users (username, password, role) VALUES ($1, $2, $3)',
-      [username, hashedPassword, role]
-    );
-
-    if (rowCount === 1) {
-      reply.code(201).send({ message: 'User created successfully' });
-    } else {
-      reply.code(500).send({ message: 'User creation failed' });
-    }
   });
 
   fastify.post('/signin', async (request, reply) => {
