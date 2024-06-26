@@ -4,12 +4,38 @@ const app = build(
   { logger: true },
   {
     routePrefix: '/docs',
+    swagger: {
+      info: {
+        title: 'Library API',
+        description: 'Library API documentation with JWT authentication',
+        version: '1.0.0',
+      },
+      host: '127.0.0.1:3000',
+      schemes: ['http'],
+      consumes: ['application/json'],
+      produces: ['application/json'],
+      securityDefinitions: {
+        bearerAuth: {
+          type: 'apiKey',
+          name: 'Authorization',
+          in: 'header',
+          description: "Enter your bearer token in the format **Bearer &lt;token>**",
+        },
+      },
+      security: [
+        {
+          bearerAuth: [],
+        },
+      ],
+    },
     uiConfig: {
-      deepLinking: false
+      deepLinking: true,
+      displayRequestDuration: true,
+      persistAuthorization: true,
     },
     uiHooks: {
-      onRequest: function(request, reply, next) { next() },
-      preHandler: function(request, reply, next) { next() }
+      onRequest: function (request, reply, next) { next() },
+      preHandler: function (request, reply, next) { next() },
     },
     staticCSP: true,
     transformStaticCSP: (header) => header,
@@ -18,4 +44,10 @@ const app = build(
   }
 );
 
-app.listen({ port: 3000, host: "127.0.0.1" })
+app.listen({ port: 3000, host: "127.0.0.1" }, (err, address) => {
+  if (err) {
+    app.log.error(err);
+    process.exit(1);
+  }
+  app.log.info(`Server listening on ${address}`);
+});
