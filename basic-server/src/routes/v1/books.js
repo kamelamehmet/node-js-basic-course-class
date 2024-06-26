@@ -1,7 +1,7 @@
 
 const { bookSchema, querySchema } = require('../../schemas/v1/books');
 
-const bookRoutes = async (app) => {
+const bookRoutes = async (app, opts, done) => {
   app.get('/books', {
     schema: {
       querystring: querySchema,
@@ -30,7 +30,6 @@ const bookRoutes = async (app) => {
       params.push(limit, (page - 1) * limit);
 
       const { rows } = await app.pg.query(query, params);
-      console.log(rows)
       reply.send(rows);
     }
   });
@@ -42,6 +41,7 @@ const bookRoutes = async (app) => {
       }
     },
     handler: async (request, reply) => {
+      console.log(await request.authenticate(request, reply))
       const { isbn } = request.params;
       const { rows } = await app.pg.query('SELECT * FROM books WHERE isbn = $1', [isbn]);
       if (rows.length === 0) {
