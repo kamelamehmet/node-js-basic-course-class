@@ -30,19 +30,20 @@ const bookRoutes = async (app) => {
       params.push(limit, (page - 1) * limit);
 
       const { rows } = await app.pg.query(query, params);
+      console.log(rows)
       reply.send(rows);
     }
   });
 
-  app.get('/books/:id', {
+  app.get('/books/:isbn', {
     schema: {
       response: {
         200: bookSchema
       }
     },
     handler: async (request, reply) => {
-      const { id } = request.params;
-      const { rows } = await app.pg.query('SELECT * FROM books WHERE id = $1', [id]);
+      const { isbn } = request.params;
+      const { rows } = await app.pg.query('SELECT * FROM books WHERE isbn = $1', [isbn]);
       if (rows.length === 0) {
         reply.status(404).send({ message: 'Book not found' });
       } else {
@@ -68,7 +69,7 @@ const bookRoutes = async (app) => {
     }
   });
 
-  app.put('/books/:id', {
+  app.put('/books/:isbn', {
     schema: {
       body: bookSchema,
       response: {
@@ -76,11 +77,11 @@ const bookRoutes = async (app) => {
       }
     },
     handler: async (request, reply) => {
-      const { id } = request.params;
-      const { title, author, isbn, publicationYear } = request.body;
+      const { isbn } = request.params;
+      const { title, author, publicationYear } = request.body;
       const { rows } = await app.pg.query(
-        'UPDATE books SET title = $1, author = $2, isbn = $3, publicationYear = $4 WHERE id = $5 RETURNING *',
-        [title, author, isbn, publicationYear, id]
+        'UPDATE books SET title = $1, author = $2, publicationYear = $3 WHERE isbn = $4 RETURNING *',
+        [title, author, publicationYear, isbn]
       );
       if (rows.length === 0) {
         reply.status(404).send({ message: 'Book not found' });
@@ -90,10 +91,10 @@ const bookRoutes = async (app) => {
     }
   });
 
-  app.delete('/books/:id', {
+  app.delete('/books/:isbn', {
     handler: async (request, reply) => {
-      const { id } = request.params;
-      const { rowCount } = await app.pg.query('DELETE FROM books WHERE id = $1', [id]);
+      const { isbn } = request.params;
+      const { rowCount } = await app.pg.query('DELETE FROM books WHERE isbn = $1', [isbn]);
       if (rowCount === 0) {
         reply.status(404).send({ message: 'Book not found' });
       } else {
