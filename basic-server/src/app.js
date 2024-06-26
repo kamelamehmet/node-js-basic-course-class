@@ -9,31 +9,32 @@ require('dotenv').config();
 
 const build = (opts = {}, optsSwaggerUI = {}) => {
   const app = fastify(opts);
-  app.register(fastifySwagger,{swagger: {
-    info: {
-      title: 'Library API',
-      description: 'Library API documentation with JWT authentication',
-      version: '1.0.0',
-    },
-    host: '127.0.0.1:3000',
-    schemes: ['http'],
-    consumes: ['application/json'],
-    produces: ['application/json'],
-    securityDefinitions: {
-      bearerAuth: {
-        type: 'apiKey',
-        name: 'Authorization',
-        in: 'header',
-        description: "Enter your bearer token in the format **Bearer &lt;token>**",
+  app.register(fastifySwagger, {
+    swagger: {
+      info: {
+        title: 'Library API',
+        description: 'Library API documentation with JWT authentication',
+        version: '1.0.0',
       },
-    },
-    security: [
-      {
-        bearerAuth: [],
+      host: '127.0.0.1:3000',
+      schemes: ['http'],
+      consumes: ['application/json'],
+      produces: ['application/json'],
+      securityDefinitions: {
+        bearerAuth: {
+          type: 'apiKey',
+          name: 'Authorization',
+          in: 'header',
+          description: "Enter your bearer token in the format **Bearer &lt;token>**",
+        },
       },
-    ],
-  }
-});
+      security: [
+        {
+          bearerAuth: [],
+        },
+      ],
+    }
+  });
   app.register(fastifySwaggerUI, optsSwaggerUI)
   app.register(jwt, {
     secret: "kjghfjh"
@@ -48,7 +49,7 @@ const build = (opts = {}, optsSwaggerUI = {}) => {
     try {
       await request.jwtVerify()
     } catch (err) {
-      reply.send(err)
+      console.log("Not authorized")
     }
   })
   return app;
