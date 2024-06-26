@@ -14,7 +14,7 @@ const bookRoutes = async (app) => {
     },
     handler: async (request, reply) => {
       const { author, publicationYear, page = 1, limit = 10, sort = 'DESC' } = request.query;
-      let query = 'SELECT * FROM books WHERE 1=1';
+      let query = 'SELECT * FROM books';
       const params = [];
       let paramIndex = 1;
       if (author) {
@@ -22,7 +22,7 @@ const bookRoutes = async (app) => {
         params.push(`%${author}%`);
       }
       if (publicationYear) {
-        query += ` AND publicationYear = $${paramIndex++}`;
+        query += ` AND publicationYear = ${paramIndex++}`;
         params.push(publicationYear);
       }
       query += ` ORDER BY publicationYear ${sort}`;
