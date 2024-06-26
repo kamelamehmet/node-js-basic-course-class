@@ -13,24 +13,26 @@ const bookRoutes = async (app, opts, done) => {
     },
     handler: async (request, reply) => {
       const user = request.user;
-      console.log(user)
       if (!user) { reply.code(401).send("Unathorized") }
       if (user.role !== "normal") { reply.code(403).send("Forbidden") }
       const { author, publicationYear, page = 1, limit = 10, sort = 'DESC' } = request.query;
-      let query = 'SELECT * FROM books';
+      let query = 'SELECT * FROM books WHERE 1=1';
       const params = [];
+      publicationYear
       let paramIndex = 1;
       if (author) {
         query += ` AND author ILIKE $${paramIndex++}`;
         params.push(`%${author}%`);
       }
       if (publicationYear) {
-        query += ` AND publicationYear = ${paramIndex++}`;
-        params.push(publicationYear);
+        query += ` AND publicationYear = $${paramIndex++}`;
+        params.push(parseInt(publicationYear));
       }
       query += ` ORDER BY publicationYear ${sort}`;
       query += ` LIMIT $${paramIndex++} OFFSET $${paramIndex}`;
       params.push(limit, (page - 1) * limit);
+
+      console.log({ params, paramIndex, query })
 
       const { rows } = await app.pg.query(query, params);
       reply.send(rows);
