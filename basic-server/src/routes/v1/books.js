@@ -13,7 +13,7 @@ const bookRoutes = async (app, opts, done) => {
       }
     },
     handler: async (request, reply) => {
-      const user = request.authenticate();
+      const user = request.user;
       if(!user) {reply.code(401).send("Unathorized")}
       if(user.role !== "normal") {reply.code(403).send("Forbidden")}
       const { author, publicationYear, page = 1, limit = 10, sort = 'DESC' } = request.query;

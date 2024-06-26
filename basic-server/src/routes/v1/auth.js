@@ -1,11 +1,13 @@
-const bcrypt = require("bcrypt")
+const bcrypt = require("bcrypt");
+const { signupSchema, signinSchema } = require('../../schemas/v1/auth');
+
 const authRoutes = async (fastify) => {
 
-  fastify.post('/signup', async (request, reply) => {
+  fastify.post('/signup', { schema: signupSchema }, async (request, reply) => {
     const { username, password, role } = request.body;
-    console.log(request.body)
+    console.log(request.body);
 
-    const hashedPassword = await bcrypt.hash(password, 10)
+    const hashedPassword = await bcrypt.hash(password, 10);
     const { rowCount } = await fastify.pg.query(
       'INSERT INTO users (username, password, role) VALUES ($1, $2, $3)',
       [username, hashedPassword, role]
@@ -16,11 +18,9 @@ const authRoutes = async (fastify) => {
     } else {
       reply.code(500).send({ message: 'User creation failed' });
     }
-
-
   });
 
-  fastify.post('/signin', async (request, reply) => {
+  fastify.post('/signin', { schema: signinSchema }, async (request, reply) => {
     const { username, password } = request.body;
     const { rows } = await fastify.pg.query('SELECT * FROM users WHERE username = $1', [username]);
     if (rows.length === 0) {
@@ -28,19 +28,17 @@ const authRoutes = async (fastify) => {
     }
 
     const user = rows[0];
-    const match = await bcrypt.compare(password, user.password)
-    console.log(user)
+    const match = await bcrypt.compare(password, user.password);
+    console.log(user);
     if (!match) {
-      reply.code(401).send({ message: 'Invalid username or password' });
+      return reply.code(401).send({ message: 'Invalid username or password' });
     }
 
     const token = fastify.jwt.sign({ id: user.id, role: user.role });
     reply.send({ token });
-
-
   });
-}
+};
 
 module.exports = {
   authRoutes
-}
+};
