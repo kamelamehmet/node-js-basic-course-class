@@ -3,7 +3,6 @@ const authRoutes = async (fastify) => {
 
   fastify.post('/signup', async (request, reply) => {
     const { username, password, role } = request.body;
-    let hashedPassword = "";
 
     bcrypt.hash(password, 10, async (err, hash) => {
       if (err) reply.send(err)
@@ -24,20 +23,25 @@ const authRoutes = async (fastify) => {
   fastify.post('/signin', async (request, reply) => {
     const { username, password } = request.body;
 
+
     const { rows } = await fastify.pg.query('SELECT * FROM users WHERE username = $1', [username]);
     if (rows.length === 0) {
       return reply.code(401).send({ message: 'Invalid username or password' });
     }
 
     const user = rows[0];
-    const match = await bcrypt.compare(password, user.password);
+    console.log(user)
+    bcrypt.compare(password, user.password, (err, match) => {
+      if (err) reply.send(err)
+      if (!match) {
+        reply.code(401).send({ message: 'Invalid username or password' });
+      }
 
-    if (!match) {
-      return reply.code(401).send({ message: 'Invalid username or password' });
-    }
+      const token = fastify.jwt.sign({ id: user.id, role: user.role });
+      reply.send({ token });
 
-    const token = fastify.jwt.sign({ id: user.id, role: user.role });
-    reply.send({ token });
+    });
+
   });
 }
 
