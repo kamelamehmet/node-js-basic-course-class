@@ -2,7 +2,7 @@ const { bookSchema, querySchema } = require('../../schemas/v1/books');
 
 const bookRoutes = async (app, opts, done) => {
   app.get('/books', {
-  
+
     schema: {
       querystring: querySchema,
       response: {
@@ -13,9 +13,10 @@ const bookRoutes = async (app, opts, done) => {
       }
     },
     handler: async (request, reply) => {
-      const user = request.authenticate();
-      if(!user) {reply.code(401).send("Unathorized")}
-      if(user.role !== "normal") {reply.code(403).send("Forbidden")}
+      const user = request.user;
+      console.log(user)
+      if (!user) { reply.code(401).send("Unathorized") }
+      if (user.role !== "normal") { reply.code(403).send("Forbidden") }
       const { author, publicationYear, page = 1, limit = 10, sort = 'DESC' } = request.query;
       let query = 'SELECT * FROM books';
       const params = [];
@@ -45,8 +46,8 @@ const bookRoutes = async (app, opts, done) => {
     },
     handler: async (request, reply) => {
       const user = request.authenticate();
-      if(!user) {reply.code(401).send("Unathorized")}
-      if(user.role !== "normal") {reply.code(403).send("Forbidden")}
+      if (!user) { reply.code(401).send("Unathorized") }
+      if (user.role !== "normal") { reply.code(403).send("Forbidden") }
       const { isbn } = request.params;
       const { rows } = await app.pg.query('SELECT * FROM books WHERE isbn = $1', [isbn]);
       if (rows.length === 0) {
@@ -66,8 +67,8 @@ const bookRoutes = async (app, opts, done) => {
     },
     handler: async (request, reply) => {
       const user = request.authenticate();
-      if(!user) {reply.code(401).send("Unathorized")}
-      if(user.role !== "admin") {reply.code(403).send("Forbidden")}
+      if (!user) { reply.code(401).send("Unathorized") }
+      if (user.role !== "admin") { reply.code(403).send("Forbidden") }
       const { title, author, isbn, publicationYear } = request.body;
       const { rows } = await app.pg.query(
         'INSERT INTO books (title, author, isbn, publicationYear) VALUES ($1, $2, $3, $4) RETURNING *',
@@ -86,8 +87,8 @@ const bookRoutes = async (app, opts, done) => {
     },
     handler: async (request, reply) => {
       const user = request.authenticate();
-      if(!user) {reply.code(401).send("Unathorized")}
-      if(user.role !== "admin") {reply.code(403).send("Forbidden")}
+      if (!user) { reply.code(401).send("Unathorized") }
+      if (user.role !== "admin") { reply.code(403).send("Forbidden") }
       const { isbn } = request.params;
       const { title, author, publicationYear } = request.body;
       const { rows } = await app.pg.query(
@@ -105,8 +106,8 @@ const bookRoutes = async (app, opts, done) => {
   app.delete('/books/:isbn', {
     handler: async (request, reply) => {
       const user = request.authenticate();
-      if(!user) {reply.code(401).send("Unathorized")}
-      if(user.role !== "admin") {reply.code(403).send("Forbidden")}
+      if (!user) { reply.code(401).send("Unathorized") }
+      if (user.role !== "admin") { reply.code(403).send("Forbidden") }
       const { isbn } = request.params;
       const { rowCount } = await app.pg.query('DELETE FROM books WHERE isbn = $1', [isbn]);
       if (rowCount === 0) {

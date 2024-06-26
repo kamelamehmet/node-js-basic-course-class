@@ -35,22 +35,22 @@ const build = (opts = {}, optsSwaggerUI = {}) => {
   }
 });
   app.register(fastifySwaggerUI, optsSwaggerUI)
+  app.register(jwt, {
+    secret: "kjghfjh"
+  });
   app.register(bookRoutes)
   app.register(authRoutes)
   app.register(postgres, {
     connectionString: process.env.CONNECTION_STRING
   })
-  app.register(jwt, {
-    secret: "kjghfjh"
-  });
-  app.decorateRequest("authenticate", (request, reply) => {
+
+  app.addHook("onRequest", async (request, reply) => {
     try {
-      return app.jwt.verify()
+      await request.jwtVerify()
     } catch (err) {
       reply.send(err)
     }
   })
   return app;
-};
-
+}
 module.exports = { build };
